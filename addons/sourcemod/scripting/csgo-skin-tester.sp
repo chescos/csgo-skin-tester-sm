@@ -24,6 +24,8 @@
 #define PLUGIN_NAME									"HighOnSkins"
 #define PLUGIN_VERSION							"0.6.0"
 #define BASE_URL										"https://highonskins.chescos.me"
+#define SOCKET_IP										"1.2.3.4"
+#define SOCKET_PORT									1234
 #define LENGTH_IP										20
 #define LENGTH_PAINTKIT_NAME				100
 #define LENGTH_ITEM_NAME						100
@@ -69,6 +71,7 @@ new Handle:g_hPlayerSkins[MAXPLAYERS+1];
 
 public OnPluginStart()
 {
+	// TODO: Make socket IP and socket port configurable through config.
 	InitDebugLog("debug_hos", "hos");
 
 	LogDebug("OnPluginStart");
@@ -99,6 +102,8 @@ public OnPluginStart()
 			SDKHook(i, SDKHook_WeaponEquipPost, OnPostWeaponEquip);
 		}
 	}
+
+	ConnectToSocket();
 }
 
 public OnConfigsExecuted()
@@ -144,7 +149,6 @@ public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcas
 
 public Action:OnPostWeaponEquip(int client, int weapon)
 {
-	// TODO: How to handle this function?
 	LogDebug("OnPostWeaponEquip (client %d, weapon %d)", client, weapon);
 
 	// player has no pending skin
@@ -378,6 +382,7 @@ void OnSocketSkinCreated(Handle:hObj)
 
 public Action:TimerSendHeartbeat(Handle:timer)
 {
+	ConnectToSocket();
 	SendHeartbeat();
 
 	return Plugin_Continue;
@@ -404,6 +409,15 @@ public Action ReactivateWeaponTimer(Handle:timer, DataPack:ph)
  * MAIN FUNCTIONS
  * *********************************************************************************************************
  */
+
+void ConnectToSocket()
+{
+	// connect to socket server if not connected
+	if(!SocketIsConnected(g_hSocket)) {
+		LogDebug("Connecting to socket server at %s:%d...", SOCKET_IP, SOCKET_PORT);
+		SocketConnect(g_hSocket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, SOCKET_IP, SOCKET_PORT);
+	}
+}
 
 void ClearSkin(int client)
 {
