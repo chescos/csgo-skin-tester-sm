@@ -30,7 +30,7 @@ On your game server, navigate to *addons/sourcemod/configs* and open the file *c
 
 The plugin will require a server restart in order to work. After your server has been restarted, you're ready to go.
 
-# Requirements
+## Requirements
 
 All requirements are already included in the repository, you don't need to download and install them yourself.
 
@@ -38,11 +38,11 @@ All requirements are already included in the repository, you don't need to downl
 * [Socket](https://forums.alliedmods.net/showthread.php?t=67640) - Used for communication through sockets
 * [SMJansson](https://forums.alliedmods.net/showthread.php?t=184604) - Used for JSON encoding and decoding
 
-# Debugging
+## Debugging
 
 You can set the console variable `debug_csgo_skin_tester` to `32` and the plugin will log detailed messages to *addons/sourcemod/logs/debug_csgo_skin_tester.log*. The plugin uses Dr. McKay's logdebug implementation, more information can be found at the [AlliedMods thread](https://forums.alliedmods.net/showthread.php?t=258855).
 
-# ConVars
+## ConVars
 
 * **sm_st_socket_ip** - IP address of the socket server (DEFAULT: "")
 * **sm_st_socket_port** - Port of the socket server (DEFAULT: "")
