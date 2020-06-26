@@ -213,8 +213,14 @@ public Action:OnPostWeaponEquip(int client, int weapon)
 	}
 
 	new iPaintkit;
+	new iStattrak;
+	new iSeed;
+	new Float:fWear;
 
 	GetTrieValue(g_hPlayerSkins[client], "paintkit_defindex", iPaintkit);
+	GetTrieValue(g_hPlayerSkins[client], "stattrak", iStattrak);
+	GetTrieValue(g_hPlayerSkins[client], "seed", iSeed);
+	GetTrieValue(g_hPlayerSkins[client], "wear", fWear);
 
 	LogDebug("Found paintkit %d", iPaintkit);
 
@@ -223,7 +229,7 @@ public Action:OnPostWeaponEquip(int client, int weapon)
 	GetTrieString(g_hPlayerSkins[client], "paintkit_name", sPaintkitName, sizeof(sPaintkitName));
 	GetTrieString(g_hPlayerSkins[client], "item_name", sItemName, sizeof(sItemName));
 
-	ChangePaint(weapon, iPaintkit, 0, -1, 0.01);
+	ChangePaint(weapon, iPaintkit, iSeed, iStattrak, fWear);
 
 	ClearSkin(client);
 }
@@ -317,10 +323,13 @@ void OnSocketSkinCreated(Handle:hObj)
 	json_object_get_string(hObj, "item_name_technical", sItemNameTechnical, sizeof(sItemNameTechnical));
 	json_object_get_string(hObj, "item_type", sItemType, sizeof(sItemType));
 
-	new iPaintkitDefindex, iItemDefindex;
+	new iPaintkitDefindex, iItemDefindex, iSeed, iStattrak, Float:fWear;
 
 	iPaintkitDefindex = json_object_get_int(hObj, "paintkit_defindex");
 	iItemDefindex = json_object_get_int(hObj, "item_defindex");
+	iSeed = json_object_get_int(hObj, "seed");
+	iStattrak = json_object_get_int(hObj, "stattrak");
+	fWear = json_object_get_float(hObj, "wear");
 
 	SetTrieString(hTrie, "paintkit_name", sPaintkitName, false);
 	SetTrieString(hTrie, "item_name", sItemName, false);
@@ -330,6 +339,9 @@ void OnSocketSkinCreated(Handle:hObj)
 
 	SetTrieValue(hTrie, "paintkit_defindex", iPaintkitDefindex, false);
 	SetTrieValue(hTrie, "item_defindex", iItemDefindex, false);
+	SetTrieValue(hTrie, "seed", iSeed, false);
+	SetTrieValue(hTrie, "stattrak", iStattrak, false);
+	SetTrieValue(hTrie, "wear", fWear, false);
 
 	// Set the player skin.
 	g_hPlayerSkins[client] = hTrie;
@@ -529,7 +541,7 @@ void ChangePaint(int weapon, int iPaintkit, int iSeed, int iStattrak, float fWea
 	// Member: m_nFallbackStatTrak (offset 2320) (type integer) (bits 20) ()
 	SetEntProp(weapon, Prop_Send, "m_nFallbackStatTrak", iStattrak);
 
-	LogDebug("Changed weapon %d to paintkit %d", weapon, iPaintkit);
+	LogDebug("Changed weapon %d to paintkit %d, seed %d, stattrak %d, wear %f", weapon, iPaintkit, iSeed, iStattrak, fWear);
 }
 
 void ChangeGloves(int client, int iDefindex, int iPaintkit, float fWear, int iSeed)
