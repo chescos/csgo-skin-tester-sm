@@ -21,12 +21,10 @@
  * *********************************************************************************************************
  */
 
-#define PLUGIN_NAME									"HighOnSkins"
-#define PLUGIN_VERSION							"0.6.0"
-#define BASE_URL										"https://highonskins.chescos.me"
-#define SOCKET_IP										"1.2.3.4"
-#define SOCKET_PORT									1234
+#define PLUGIN_NAME									"CS:GO Skin Tester"
+#define PLUGIN_VERSION							"0.1.0"
 #define LENGTH_IP										20
+#define LENGTH_PORT									2
 #define LENGTH_PAINTKIT_NAME				100
 #define LENGTH_ITEM_NAME						100
 #define LENGTH_ITEM_CLASS						100
@@ -44,9 +42,8 @@ public Plugin:myinfo =
 {
 	name = PLUGIN_NAME,
 	author = "chescos",
-	description = "HighOnSkins - The Global CS:GO skin network",
-	version = PLUGIN_VERSION,
-	url = "https://highonskins.com"
+	description = "CS:GO Skin Tester - Inspect skins in-game",
+	version = PLUGIN_VERSION
 };
 
 /**
@@ -58,6 +55,9 @@ public Plugin:myinfo =
 new String:g_sServerIP[20];
 new String:g_sServerPort[6];
 new String:g_sServerSlots[2];
+
+new Handle:g_hSocketIP;
+new Handle:g_hSocketPort;
 
 new Handle:g_hSocket;
 
@@ -71,13 +71,18 @@ new Handle:g_hPlayerSkins[MAXPLAYERS+1];
 
 public OnPluginStart()
 {
-	// TODO: Make socket IP and socket port configurable through config.
-	InitDebugLog("debug_hos", "hos");
+	InitDebugLog("debug_csgo_skin_tester", "csgo_skin_tester");
 
 	LogDebug("OnPluginStart");
 
 	// event hooks
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
+
+	// create convars
+	g_hSocketIP = CreateConVar("sm_st_socket_ip", "", "IP address of the socket server", FCVAR_PROTECTED, false, 0.0, false, 0.0);
+	g_hSocketPort = CreateConVar("sm_st_socket_port", "", "Port of the socket server", FCVAR_PROTECTED, false, 0.0, false, 0.0);
+
+	AutoExecConfig(true, "csgo_skin_tester");
 
 	// get server port
 	new iPort = GetConVarInt(FindConVar("hostport"));
@@ -102,13 +107,15 @@ public OnPluginStart()
 			SDKHook(i, SDKHook_WeaponEquipPost, OnPostWeaponEquip);
 		}
 	}
-
-	ConnectToSocket();
 }
 
 public OnConfigsExecuted()
 {
 	LogDebug("OnConfigsExecuted");
+
+	// connect to socket as soon as sourcemod configs have been executed
+	// need to wait for this event because we need to read the sm_st_socket_ip and sm_st_socket_port convar values
+	ConnectToSocket();
 }
 
 public OnPluginEnd()
@@ -290,7 +297,7 @@ void OnSocketSkinCreated(Handle:hObj)
 	LogDebug("OnSocketSkinCreated");
 
 	decl String:sIP[LENGTH_IP];
-	json_object_get_string(hObj, "ip_address", sIP, sizeof(sIP));
+	json_object_get_string(hObj, "ip", sIP, sizeof(sIP));
 
 	new client = FindClientByIP(sIP);
 
@@ -366,10 +373,10 @@ void OnSocketSkinCreated(Handle:hObj)
 			EquipPlayerWeapon(client, iNewWeapon);
 			FakeClientCommand(client, "use %s", sItemClass);
 		}
-		PrintToChatCustom(client, "Saved paintkit %s for item %s.", sPaintkitName, sItemName);
+		PrintToChatCustom(client, "Applied paintkit %s for item %s.", sPaintkitName, sItemName);
 	}
 
-	LogDebug("Updated paintkit %s for item %s to inventory", sPaintkitName, sItemName);
+	LogDebug("Applied paintkit %s for item %s", sPaintkitName, sItemName);
 
 	CloseHandle(hObj);
 }
@@ -414,8 +421,12 @@ void ConnectToSocket()
 {
 	// connect to socket server if not connected
 	if(!SocketIsConnected(g_hSocket)) {
-		LogDebug("Connecting to socket server at %s:%d...", SOCKET_IP, SOCKET_PORT);
-		SocketConnect(g_hSocket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, SOCKET_IP, SOCKET_PORT);
+		decl String:sSocketIP[LENGTH_IP];
+		GetConVarString(g_hSocketIP, sSocketIP, sizeof(sSocketIP));
+		new iSocketPort = GetConVarInt(g_hSocketPort);
+
+		LogDebug("Connecting to socket server at %s:%d...", sSocketIP, iSocketPort);
+		SocketConnect(g_hSocket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, sSocketIP, iSocketPort);
 	}
 }
 
@@ -498,7 +509,7 @@ void PrintToChatCustom(int client, const String:sMessage[], any:...)
 
 	SetGlobalTransTarget(client);
 
-	Format(sBuffer, sizeof(sBuffer), " \x01\x0B\x02[HOS] \x04%s", sMessage);
+	Format(sBuffer, sizeof(sBuffer), " \x01\x0B\x02[CS:GO Skin Tester] \x04%s", sMessage);
 	VFormat(sFormattedMessage, sizeof(sFormattedMessage), sBuffer, 3);
 
 	PrintToChat(client, "%s", sFormattedMessage);
