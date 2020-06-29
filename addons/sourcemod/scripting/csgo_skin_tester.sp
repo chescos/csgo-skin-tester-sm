@@ -14,6 +14,7 @@
 #include <SteamWorks>
 #include <socket>
 #include <logdebug>
+#include <PTaH>
 
 /**
  * *********************************************************************************************************
@@ -77,6 +78,8 @@ public OnPluginStart()
 
 	// event hooks
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
+
+	PTaH(PTaH_GiveNamedItemPre, Hook, GiveNamedItemPre);
 
 	// create convars
 	g_hSocketIP = CreateConVar("sm_st_socket_ip", "", "IP address of the socket server", FCVAR_PROTECTED, false, 0.0, false, 0.0);
@@ -149,6 +152,25 @@ public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcas
 		json_object_set_new(hData, "ip", json_string(sIP));
 
 		SendSocketMessage("player-spawned", hData);
+	}
+
+	return Plugin_Continue;
+}
+
+Action GiveNamedItemPre(int client, char classname[64], CEconItemView &item, bool &ignoredCEconItemView, bool &OriginIsNULL, float Origin[3])
+{
+	// This is necessary so that knife skins work when the player already has a real knife skin.
+	// Without it, trying to give the player a knife skin simply won't have any effect and he will
+	// continue to have his real knife skin.
+	if (IsValidClient(client) && g_hPlayerSkins[client] != INVALID_HANDLE && IsKnifeClass(classname)) {
+		LogDebug("Client has pending knife skin in GiveNamedItemPre");
+		decl String:sItemNameTechnical[LENGTH_ITEM_NAME_TECHNICAL];
+		GetTrieString(g_hPlayerSkins[client], "item_name_technical", sItemNameTechnical, sizeof(sItemNameTechnical));
+		LogDebug("Force class %s", sItemNameTechnical);
+		ignoredCEconItemView = true;
+		strcopy(classname, sizeof(classname), sItemNameTechnical);
+
+		return Plugin_Changed;
 	}
 
 	return Plugin_Continue;
@@ -588,6 +610,15 @@ void ChangeGloves(int client, int iDefindex, int iPaintkit, float fWear, int iSe
 	// remove active weapon and assign it again with a timer
 	// this is necessary to "reload" the gloves, else the old gloves will still be there
 	ReactivateWeapon(client);
+}
+
+bool IsKnifeClass(const char[] classname)
+{
+	if ((StrContains(classname, "knife") > -1 && strcmp(classname, "weapon_knifegg") != 0) || StrContains(classname, "bayonet") > -1) {
+		return true;
+	}
+
+	return false;
 }
 
 void ReactivateWeapon(int client)
