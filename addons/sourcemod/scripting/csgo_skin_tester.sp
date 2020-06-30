@@ -80,6 +80,9 @@ public OnPluginStart()
 	// event hooks
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
 
+	AddCommandListener(OnSayCommand, "say");
+	AddCommandListener(OnSayCommand, "say_team");
+
 	PTaH(PTaH_GiveNamedItemPre, Hook, GiveNamedItemPre);
 
 	// create convars
@@ -141,6 +144,17 @@ public OnClientDisconnect(int client)
 {
 	ClearSkin(client);
 }
+
+public Action:OnSayCommand(client, const String:command[], args)
+{
+	if (IsValidClient(client)) {
+		PrintToChatCustom(client, "The chat is disabled.");
+		return Plugin_Stop;
+	}
+
+	return Plugin_Continue;
+}
+
 
 public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
