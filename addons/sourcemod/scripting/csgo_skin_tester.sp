@@ -59,6 +59,7 @@ new String:g_sServerSlots[2];
 
 new Handle:g_hSocketIP;
 new Handle:g_hSocketPort;
+new Handle:g_hChatPrefix;
 
 new Handle:g_hSocket;
 
@@ -84,6 +85,7 @@ public OnPluginStart()
 	// create convars
 	g_hSocketIP = CreateConVar("sm_st_socket_ip", "", "IP address of the socket server", FCVAR_PROTECTED, false, 0.0, false, 0.0);
 	g_hSocketPort = CreateConVar("sm_st_socket_port", "", "Port of the socket server", FCVAR_PROTECTED, false, 0.0, false, 0.0);
+	g_hChatPrefix = CreateConVar("sm_st_chat_prefix", "CS:GO Skin Tester", "The prefix that is used when printing chat messages", FCVAR_PROTECTED, false, 0.0, false, 0.0);
 
 	AutoExecConfig(true, "csgo_skin_tester");
 
@@ -407,7 +409,7 @@ void OnSocketSkinCreated(Handle:hObj)
 			EquipPlayerWeapon(client, iNewWeapon);
 			FakeClientCommand(client, "use %s", sItemClass);
 		}
-		PrintToChatCustom(client, "Applied paintkit %s for item %s.", sPaintkitName, sItemName);
+		PrintToChatCustom(client, "Equipped %s | %s with wear %f and pattern %d.", sItemName, sPaintkitName, fWear, iSeed);
 	}
 
 	LogDebug("Applied paintkit %s for item %s", sPaintkitName, sItemName);
@@ -540,10 +542,12 @@ void PrintToChatCustom(int client, const String:sMessage[], any:...)
 {
 	decl String:sBuffer[512];
 	decl String:sFormattedMessage[512];
+	decl String:sChatPrefix[128];
+	GetConVarString(g_hChatPrefix, sChatPrefix, sizeof(sChatPrefix));
 
 	SetGlobalTransTarget(client);
 
-	Format(sBuffer, sizeof(sBuffer), " \x01\x0B\x02[CS:GO Skin Tester] \x04%s", sMessage);
+	Format(sBuffer, sizeof(sBuffer), " \x01\x0B\x02[%s] \x04%s", sChatPrefix, sMessage);
 	VFormat(sFormattedMessage, sizeof(sFormattedMessage), sBuffer, 3);
 
 	PrintToChat(client, "%s", sFormattedMessage);
