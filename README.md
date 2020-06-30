@@ -60,4 +60,5 @@ mp_use_respawn_waves 1
 mp_do_warmup_period 0
 mp_roundtime 60
 sv_hibernate_when_empty 0
+mp_solid_teammates 0
 ```
