@@ -113,6 +113,7 @@ public OnPluginStart()
 	for(new i = 1; i <= MaxClients; i++) {
 		if(IsValidClient(i)) {
 			SDKHook(i, SDKHook_WeaponEquipPost, OnPostWeaponEquip);
+			SDKHook(i, SDKHook_SetTransmit, OnSetTransmit);
 		}
 	}
 }
@@ -137,6 +138,7 @@ public OnClientPutInServer(int client)
 
 	if(IsValidClient(client)) {
 		SDKHook(client, SDKHook_WeaponEquipPost, OnPostWeaponEquip);
+		SDKHook(client, SDKHook_SetTransmit, OnSetTransmit);
 	}
 }
 
@@ -155,12 +157,25 @@ public Action:OnSayCommand(client, const String:command[], args)
 	return Plugin_Continue;
 }
 
+public Action:OnSetTransmit(entity, client)
+{
+	// Prevent clients from seeing each other.
+	// This makes users effectively invisible.
+	if (entity != client) {
+		return Plugin_Handled;
+	}
+
+	return Plugin_Continue;
+}
 
 public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 
-	if(IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) > CS_TEAM_SPECTATOR) {
+	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) > CS_TEAM_SPECTATOR) {
+		// Disdable any kind of damage.
+		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
+
 		new Handle:hData = json_object();
 		new String:sIP[LENGTH_IP];
 
