@@ -46,3 +46,18 @@ You can set the console variable `debug_csgo_skin_tester` to `32` and the plugin
 
 * **sm_st_socket_ip** - IP address of the socket server (DEFAULT: "")
 * **sm_st_socket_port** - Port of the socket server (DEFAULT: "")
+
+## Recommended Server Settings
+
+```
+mp_ignore_round_win_conditions 1
+mp_force_pick_time 0
+mp_respawn_on_death_ct 1
+mp_respawn_on_death_t 1 
+mp_respawnwavetime_ct 1.0
+mp_respawnwavetime_t 1.0
+mp_use_respawn_waves 1
+mp_do_warmup_period 0
+mp_roundtime 60
+sv_hibernate_when_empty 0
+```
