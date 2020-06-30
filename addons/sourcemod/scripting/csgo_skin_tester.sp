@@ -25,7 +25,7 @@
 #define PLUGIN_NAME									"CS:GO Skin Tester"
 #define PLUGIN_VERSION							"0.1.0"
 #define LENGTH_IP										20
-#define LENGTH_PORT									2
+#define LENGTH_PORT									20
 #define LENGTH_PAINTKIT_NAME				100
 #define LENGTH_ITEM_NAME						100
 #define LENGTH_ITEM_CLASS						100
@@ -54,8 +54,8 @@ public Plugin:myinfo =
  */
 
 new String:g_sServerIP[20];
-new String:g_sServerPort[6];
-new String:g_sServerSlots[2];
+new String:g_sServerPort[20];
+new String:g_sServerSlots[20];
 
 new Handle:g_hSocketIP;
 new Handle:g_hSocketPort;
@@ -173,7 +173,7 @@ public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcas
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 
 	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) > CS_TEAM_SPECTATOR) {
-		// Disdable any kind of damage.
+		// Disable any kind of damage.
 		SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
 
 		new Handle:hData = json_object();
