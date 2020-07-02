@@ -287,6 +287,14 @@ public Action:OnPostWeaponEquip(int client, int weapon)
 	ClearSkin(client);
 }
 
+public Action:CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason)
+{
+	// Block ALL round ends.
+	// This also blocks map changes, warmup ends, and game restarts when a
+	// player joins an empty servers,
+	return Plugin_Handled;
+}
+
 /**
  * *********************************************************************************************************
  * SOCKET EVENTS
