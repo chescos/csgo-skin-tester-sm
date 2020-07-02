@@ -62,3 +62,12 @@ mp_roundtime 60
 sv_hibernate_when_empty 0
 mp_solid_teammates 0
 ```
+
+## Software Suite
+
+The CS:GO Skin Tester SourceMod Plugin works in conjunction with a set of related tools. At least the NodeJS Backend is required to make it work.
+
+- [NodeJS Backend](https://github.com/chescos/csgo-skin-tester)
+- [SourceMod Plugin](https://github.com/chescos/csgo-skin-tester-sm) (this repository)
+- [Frontend](https://github.com/chescos/csgo-skin-tester-frontend)
+- [Chrome Extension](https://github.com/chescos/csgo-skin-tester-extension)
