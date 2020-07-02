@@ -4,11 +4,9 @@ This is the official CS:GO Skin Tester plugin which allows you to inspect the sk
 
 ## Installation
 
-### 1. Get yourself some Steam game server tokens
+### 1. Get yourself some Steam Game Server Login Tokens
 
-You should **never** use this plugin with your own [Steam game server tokens](https://steamcommunity.com/dev/managegameservers). Steam will permanently ban all your game server tokens and you will not be able to create new ones.
-
-But there is an easy solution for this: [csgotokens.com](https://csgotokens.com) provides an awesome service. You can buy tokens for your CS:GO server there. Those tokens will get banned every 2-3 days but that's not an issue because csgotokens provides you with a plugin that automatically uses a brand new token everytime that your current token gets banned. Tokens for one whole month will cost you about $2.
+You need a [Game Server Login Token (GSLT)](https://steamcommunity.com/dev/managegameservers) in order to run a CS:GO server. In the past, Steam banned the GSLT of servers that used plugins that give players skins that they don't actually own. This is currently not the case anymore, but you might still not want to use your own GSLT. There is an easy solution for this: [csgotokens.com](https://csgotokens.com) provides an awesome service. You can buy tokens for your CS:GO server there.
 
 ### 2. Download the plugin
 
@@ -16,7 +14,7 @@ You bought some game server tokens? Okay, nice! The next step is to [download th
 
 ### 3. Configure the plugin
 
-Now you need to configure the plugin. Navigate to *cfg/sourcemod* and open the file *csgo_skin_tester.cfg* with a text editor. Fill out the socket IP and socket port where your CS:GO Skin Tester web app is running.
+Now you need to configure the plugin. Navigate to *cfg/sourcemod* and open the file *csgo_skin_tester.cfg* with a text editor. Fill out the socket IP and socket port where your [CS:GO Skin Tester Backend](https://github.com/chescos/csgo-skin-tester) is running.
 
 ### 4. Upload files to your CS:GO server
 
@@ -37,6 +35,7 @@ All requirements are already included in the repository, you don't need to downl
 * [SteamWorks](https://forums.alliedmods.net/showthread.php?t=229556) - Used for communication with the HTTP API
 * [Socket](https://forums.alliedmods.net/showthread.php?t=67640) - Used for communication through sockets
 * [SMJansson](https://forums.alliedmods.net/showthread.php?t=184604) - Used for JSON encoding and decoding
+* [PTaH](https://forums.alliedmods.net/showthread.php?t=289289) - Used for weapon event hooks
 
 ## Debugging
 
@@ -46,6 +45,7 @@ You can set the console variable `debug_csgo_skin_tester` to `32` and the plugin
 
 * **sm_st_socket_ip** - IP address of the socket server (DEFAULT: "")
 * **sm_st_socket_port** - Port of the socket server (DEFAULT: "")
+* **sm_st_chat_prefix** - The prefix that is used when printing chat messages (DEFAULT: "CS:GO Skin Tester")
 
 ## Recommended Server Settings
 
