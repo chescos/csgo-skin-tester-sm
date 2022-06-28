@@ -423,7 +423,7 @@ void OnSocketSkinCreated(Handle:hObj)
 		}
 		// skin is for some nice gloves
 		else if(StrEqual(sItemClass, "wearable_item")) {
-			ChangeGloves(client, iItemDefindex, iPaintkitDefindex, 0.01, 0);
+			ChangeGloves(client, iItemDefindex, iPaintkitDefindex, fWear, 0);
 		}
 		// skin is for a weapon
 		else {
