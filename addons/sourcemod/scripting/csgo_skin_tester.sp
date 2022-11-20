@@ -77,6 +77,9 @@ public OnPluginStart()
 
 	LogDebug("OnPluginStart");
 
+	// Register commands.
+	RegAdminCmd("sm_skin", CommandSkin, ADMFLAG_ROOT, "Change the active skin");
+
 	// Event hooks.
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
 
@@ -431,10 +434,9 @@ void OnSocketSkinCreated(Handle:hObj)
 
 	if (client == -1) {
 		LogDebug("No client has been found for IP %s", sIP);
+
 		return;
 	}
-
-	new Handle:hTrie = CreateTrie();
 
 	decl String:sPaintkitName[LENGTH_PAINTKIT_NAME],
 		String:sItemName[LENGTH_ITEM_NAME],
@@ -456,73 +458,19 @@ void OnSocketSkinCreated(Handle:hObj)
 	iStattrak = json_object_get_int(hObj, "stattrak");
 	fWear = json_object_get_float(hObj, "wear");
 
-	SetTrieString(hTrie, "paintkit_name", sPaintkitName, false);
-	SetTrieString(hTrie, "item_name", sItemName, false);
-	SetTrieString(hTrie, "item_class", sItemClass, false);
-	SetTrieString(hTrie, "item_name_technical", sItemNameTechnical, false);
-	SetTrieString(hTrie, "item_type", sItemType, false);
-
-	SetTrieValue(hTrie, "paintkit_defindex", iPaintkitDefindex, false);
-	SetTrieValue(hTrie, "item_defindex", iItemDefindex, false);
-	SetTrieValue(hTrie, "seed", iSeed, false);
-	SetTrieValue(hTrie, "stattrak", iStattrak, false);
-	SetTrieValue(hTrie, "wear", fWear, false);
-
-	// Set the player skin.
-	g_hPlayerSkins[client] = hTrie;
-
-	// The client qualifies for a live update.
-	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) > CS_TEAM_SPECTATOR) {
-		LogDebug("Client qualifies for live update");
-
-		if (StrEqual(sItemClass, "weapon_knife")) {
-			// The skin is for a knife.
-			new iWeapon = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
-
-			if (iWeapon != -1) {
-				RemovePlayerItem(client, iWeapon);
-				AcceptEntityInput(iWeapon, "Kill");
-				new iKnife = GivePlayerItem(client, sItemNameTechnical);
-				EquipPlayerWeapon(client, iKnife);
-				FakeClientCommand(client, "use weapon_knife");
-			}
-		} else if (StrEqual(sItemClass, "wearable_item")) {
-			// The skin is gloves.
-			ChangeGloves(client, iItemDefindex, iPaintkitDefindex, fWear, iSeed);
-		} else {
-			// The skin is for a weapon.
-			new iActiveWeapon;
-
-			if (StrEqual(sItemType, "Pistols")) {
-				// The weapon is a secondary.
-				iActiveWeapon = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
-			} else {
-				// The weapon is a primary.
-				iActiveWeapon = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
-			}
-
-			// Remove active weapon if there is one.
-			if (iActiveWeapon != -1) {
-				RemovePlayerItem(client, iActiveWeapon);
-				AcceptEntityInput(iActiveWeapon, "Kill");
-			}
-
-			new iNewWeapon = GivePlayerItem(client, sItemNameTechnical);
-			EquipPlayerWeapon(client, iNewWeapon);
-			FakeClientCommand(client, "use %s", sItemClass);
-		}
-
-		PrintToChatCustom(
-			client,
-			"Equipped %s | %s with wear %f and pattern %d.",
-			sItemName,
-			sPaintkitName,
-			fWear,
-			iSeed
-		);
-	}
-
-	LogDebug("Applied paintkit %s for item %s", sPaintkitName, sItemName);
+	SetSkin(
+		client,
+		sPaintkitName,
+		sItemName,
+		sItemClass,
+		sItemNameTechnical,
+		sItemType,
+		iPaintkitDefindex,
+		iItemDefindex,
+		iSeed,
+		iStattrak,
+		fWear
+	);
 
 	CloseHandle(hObj);
 }
@@ -557,6 +505,59 @@ public Action ReactivateWeaponTimer(Handle:timer, DataPack:ph)
 	CloseHandle(ph);
 
 	return Plugin_Continue;
+}
+
+/**
+ * *********************************************************************************************************
+ * COMMANDS
+ * *********************************************************************************************************
+ */
+
+public Action CommandSkin(int client, int args)
+{
+	if (args < 10) {
+		ReplyToCommand(client, "Invalid arguments");
+
+		return Plugin_Handled;
+	}
+
+	char sPaintkitName[LENGTH_PAINTKIT_NAME],
+		sItemName[LENGTH_ITEM_NAME],
+		sItemClass[LENGTH_ITEM_CLASS],
+		sItemNameTechnical[LENGTH_ITEM_NAME_TECHNICAL],
+		sItemType[LENGTH_ITEM_TYPE],
+		sPaintkitDefindex[32],
+		sItemDefindex[32],
+		sSeed[32],
+		sStattrak[32],
+		sWear[32];
+
+		GetCmdArg(1, sPaintkitName, sizeof(sPaintkitName));
+		GetCmdArg(2, sItemName, sizeof(sItemName));
+		GetCmdArg(3, sItemClass, sizeof(sItemClass));
+		GetCmdArg(4, sItemNameTechnical, sizeof(sItemNameTechnical));
+		GetCmdArg(5, sItemType, sizeof(sItemType));
+		GetCmdArg(6, sPaintkitDefindex, sizeof(sPaintkitDefindex));
+		GetCmdArg(7, sItemDefindex, sizeof(sItemDefindex));
+		GetCmdArg(8, sSeed, sizeof(sSeed));
+		GetCmdArg(9, sStattrak, sizeof(sStattrak));
+		GetCmdArg(10, sWear, sizeof(sWear));
+
+		SetSkin(
+			client,
+			sPaintkitName,
+			sItemName,
+			sItemClass,
+			sItemNameTechnical,
+			sItemType,
+			StringToInt(sPaintkitDefindex),
+			StringToInt(sItemDefindex),
+			StringToInt(sSeed),
+			StringToInt(sStattrak),
+			StringToFloat(sWear)
+		);
+
+    return Plugin_Handled;
 }
 
 /**
@@ -664,6 +665,90 @@ void PrintToChatCustom(int client, const String:sMessage[], any:...)
 	VFormat(sFormattedMessage, sizeof(sFormattedMessage), sBuffer, 3);
 
 	PrintToChat(client, "%s", sFormattedMessage);
+}
+
+void SetSkin(
+	int client,
+	const String:sPaintkitName[],
+	const String:sItemName[],
+	const String:sItemClass[],
+	const String:sItemNameTechnical[],
+	const String:sItemType[],
+	int iPaintkitDefindex,
+	int iItemDefindex,
+	int iSeed,
+	int iStattrak,
+	float fWear
+) {
+	new Handle:hTrie = CreateTrie();
+
+	SetTrieString(hTrie, "paintkit_name", sPaintkitName, false);
+	SetTrieString(hTrie, "item_name", sItemName, false);
+	SetTrieString(hTrie, "item_class", sItemClass, false);
+	SetTrieString(hTrie, "item_name_technical", sItemNameTechnical, false);
+	SetTrieString(hTrie, "item_type", sItemType, false);
+
+	SetTrieValue(hTrie, "paintkit_defindex", iPaintkitDefindex, false);
+	SetTrieValue(hTrie, "item_defindex", iItemDefindex, false);
+	SetTrieValue(hTrie, "seed", iSeed, false);
+	SetTrieValue(hTrie, "stattrak", iStattrak, false);
+	SetTrieValue(hTrie, "wear", fWear, false);
+
+	// Set the player skin.
+	g_hPlayerSkins[client] = hTrie;
+
+	// The client qualifies for a live update.
+	if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) > CS_TEAM_SPECTATOR) {
+		LogDebug("Client qualifies for live update");
+
+		if (StrEqual(sItemClass, "weapon_knife")) {
+			// The skin is for a knife.
+			new iWeapon = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
+
+			if (iWeapon != -1) {
+				RemovePlayerItem(client, iWeapon);
+				AcceptEntityInput(iWeapon, "Kill");
+				new iKnife = GivePlayerItem(client, sItemNameTechnical);
+				EquipPlayerWeapon(client, iKnife);
+				FakeClientCommand(client, "use weapon_knife");
+			}
+		} else if (StrEqual(sItemClass, "wearable_item")) {
+			// The skin is gloves.
+			ChangeGloves(client, iItemDefindex, iPaintkitDefindex, fWear, iSeed);
+		} else {
+			// The skin is for a weapon.
+			new iActiveWeapon;
+
+			if (StrEqual(sItemType, "Pistols")) {
+				// The weapon is a secondary.
+				iActiveWeapon = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
+			} else {
+				// The weapon is a primary.
+				iActiveWeapon = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+			}
+
+			// Remove active weapon if there is one.
+			if (iActiveWeapon != -1) {
+				RemovePlayerItem(client, iActiveWeapon);
+				AcceptEntityInput(iActiveWeapon, "Kill");
+			}
+
+			new iNewWeapon = GivePlayerItem(client, sItemNameTechnical);
+			EquipPlayerWeapon(client, iNewWeapon);
+			FakeClientCommand(client, "use %s", sItemClass);
+		}
+
+		PrintToChatCustom(
+			client,
+			"Equipped %s | %s with wear %f and pattern %d.",
+			sItemName,
+			sPaintkitName,
+			fWear,
+			iSeed
+		);
+	}
+
+	LogDebug("Applied paintkit %s for item %s", sPaintkitName, sItemName);
 }
 
 void ChangePaint(int weapon, int iPaintkit, int iSeed, int iStattrak, float fWear)
