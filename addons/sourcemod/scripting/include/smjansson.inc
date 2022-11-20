@@ -10,8 +10,8 @@
  * The JSON specification (RFC 4627) defines the following data types:
  * object, array, string, number, boolean, and null.
  * JSON types are used dynamically; arrays and objects can hold any
- * other data type, including themselves. For this reason, Jansson�s
- * type system is also dynamic in nature. There�s one Handle type to
+ * other data type, including themselves. For this reason, Jansson’s
+ * type system is also dynamic in nature. There’s one Handle type to
  * represent all JSON values, and the referenced structure knows the
  * type of the JSON value it holds.
  *
