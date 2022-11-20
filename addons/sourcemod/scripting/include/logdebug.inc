@@ -51,7 +51,8 @@ stock void InitDebugLog(const char[] convarName, const char[] debugTag, int admi
 			len += StrCat(flagChars, sizeof(flagChars), ", ");
 		}
 		
-		FindFlagChar(flags[i], view_as<int>(flagChars[len]));
+		int c = view_as<int>(flagChars[len]);
+		FindFlagChar(flags[i], c);
 		flagChars[len + 1] = '\0';
 	}
 	
