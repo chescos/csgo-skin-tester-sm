@@ -423,7 +423,7 @@ void OnSocketSkinCreated(Handle:hObj)
 		}
 		// skin is for some nice gloves
 		else if(StrEqual(sItemClass, "wearable_item")) {
-			ChangeGloves(client, iItemDefindex, iPaintkitDefindex, fWear, 0);
+			ChangeGloves(client, iItemDefindex, iPaintkitDefindex, fWear, iSeed);
 		}
 		// skin is for a weapon
 		else {
@@ -482,6 +482,8 @@ public Action ReactivateWeaponTimer(Handle:timer, DataPack:ph)
 	}
 
 	CloseHandle(ph);
+
+	return Plugin_Continue;
 }
 
 /**
